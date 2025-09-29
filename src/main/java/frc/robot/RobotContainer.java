@@ -17,6 +17,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -24,6 +25,8 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOSim;
 import frc.robot.subsystems.drive.DriveIOSpark;
+import frc.robot.subsystems.scoring.Scoring;
+import frc.robot.subsystems.scoring.Scoring.ScoringAction;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -35,6 +38,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private final Scoring scoring;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -48,16 +52,19 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new DriveIOSpark());
+        scoring = new Scoring(); // TODO: Use IO for scoring
         break;
 
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drive = new Drive(new DriveIOSim());
+        scoring = null; // TODO: Use IO for scoring
         break;
 
       default:
         // Replayed robot, disable IO implementations
         drive = new Drive(new DriveIO() {});
+        scoring = null; // TODO: Use IO for scoring
         break;
     }
 
@@ -93,6 +100,11 @@ public class RobotContainer {
     drive.setDefaultCommand(
         DriveCommands.arcadeDrive(
             drive, () -> -controller.getLeftY(), () -> -controller.getRightX()));
+
+    controller
+        .a()
+        .onTrue(new InstantCommand(() -> scoring.setAction(ScoringAction.Score)))
+        .onFalse(new InstantCommand(() -> scoring.setAction(ScoringAction.Idle)));
   }
 
   /**
