@@ -24,6 +24,9 @@ import frc.robot.subsystems.drive.Drive;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOSim;
 import frc.robot.subsystems.drive.DriveIOSpark;
+import frc.robot.subsystems.scoring.InitBindings;
+import frc.robot.subsystems.scoring.shooter.ScoringSubsystem;
+import frc.robot.subsystems.scoring.shooter.ShooterIOSparkMax;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -55,11 +58,13 @@ public class RobotContainer {
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drive = new Drive(new DriveIOSim());
+        scoring = null;
         break;
 
       default:
         // Replayed robot, disable IO implementations
         drive = new Drive(new DriveIO() {});
+        scoring = null;
         break;
     }
 
