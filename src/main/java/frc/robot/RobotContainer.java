@@ -35,6 +35,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class RobotContainer {
   // Subsystems
   private final Drive drive;
+  private final ScoringSubsystem scoring;
 
   // Controller
   private final CommandXboxController controller = new CommandXboxController(0);
@@ -48,6 +49,7 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new DriveIOSpark());
+        scoring = new ScoringSubsystem(new ShooterIOSparkMax());
         break;
 
       case SIM:
@@ -93,6 +95,7 @@ public class RobotContainer {
     drive.setDefaultCommand(
         DriveCommands.arcadeDrive(
             drive, () -> -controller.getLeftY(), () -> -controller.getRightX()));
+    InitBindings.initScoringBindings(controller, scoring);
   }
 
   /**

@@ -1,10 +1,8 @@
 package frc.robot.subsystems.scoring;
 
-package frc.robot.subsystems.scoring;
-
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.subsystems.scoring.ScoringSubsystem;
+import frc.robot.subsystems.scoring.shooter.ScoringSubsystem;
 
 /** Methods to initialize bindings for each subsystems */
 public final class InitBindings {
@@ -20,15 +18,7 @@ public final class InitBindings {
       CommandXboxController controller, ScoringSubsystem scoring) {
     controller
         .rightTrigger()
-        .onTrue(
-            new InstantCommand(
-                () -> {
-                  scoring.tempWarmup();
-                }))
-        .onFalse(
-            new InstantCommand(
-                () -> {
-                  scoring.tempStopShooter();
-                }));
+        .whileTrue(new InstantCommand(() -> scoring.spin()))
+        .whileFalse(new InstantCommand(() -> scoring.stop()));
   }
 }
