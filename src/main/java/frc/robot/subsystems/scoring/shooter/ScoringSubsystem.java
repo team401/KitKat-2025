@@ -23,6 +23,6 @@ public class ScoringSubsystem extends SubsystemBase {
   }
 
   public void spin() {
-    shooterIO.runOpenLoop(Volts.of(3.0));
+    shooterIO.runOpenLoop(Volts.of(12.0));
   }
 }

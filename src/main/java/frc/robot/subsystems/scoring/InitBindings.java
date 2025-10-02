@@ -18,7 +18,12 @@ public final class InitBindings {
       CommandXboxController controller, ScoringSubsystem scoring) {
     controller
         .rightTrigger()
-        .whileTrue(new InstantCommand(() -> scoring.spin()))
-        .whileFalse(new InstantCommand(() -> scoring.stop()));
+        .onTrue(
+            new InstantCommand(
+                () -> {
+                  scoring.spin();
+                  System.out.println("SPINNING!");
+                }))
+        .onFalse(new InstantCommand(() -> scoring.stop()));
   }
 }

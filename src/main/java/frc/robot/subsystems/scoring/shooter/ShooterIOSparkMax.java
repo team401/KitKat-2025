@@ -20,7 +20,7 @@ public class ShooterIOSparkMax implements ShooterIO {
 
   public ShooterIOSparkMax() {
 
-    final int motorID = 5;
+    final int motorID = 6;
 
     // Configure motor
     motor = new SparkMax(motorID, MotorType.kBrushless);
@@ -29,7 +29,7 @@ public class ShooterIOSparkMax implements ShooterIO {
     config.idleMode(IdleMode.kBrake).smartCurrentLimit(currentLimit).voltageCompensation(12.0);
 
     // Apply config to leaders
-    // config.inverted(leftInverted); ?????????????????
+    config.inverted(true);
     tryUntilOk(
         motor,
         5,

@@ -1,7 +1,7 @@
 package frc.robot.subsystems.scoring.shooter;
 
 public class ShooterConstants {
-  public static final int currentLimit = 40;
+  public static final int currentLimit = 60;
   // Velocity PID configuration
   public static final double realKp = 0.0;
   public static final double realKd = 0.0;
