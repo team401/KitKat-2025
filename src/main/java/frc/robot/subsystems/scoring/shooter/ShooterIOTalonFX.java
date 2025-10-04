@@ -52,7 +52,7 @@ public class ShooterIOTalonFX implements ShooterIO {
     final int motorID = 6;
 
     // Configure motors
-    motor = new TalonFX(motorID, "canivore");
+    motor = new TalonFX(motorID, "rio");
 
     talonFXConfigs = ShooterConstants.baseTalonFXConfigs;
 
