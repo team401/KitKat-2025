@@ -16,7 +16,8 @@ public interface ShooterIO {
   public static class ShooterInputs {
     public MutAngularVelocity motorVelocity = RotationsPerSecond.mutable(0.0);
     public MutVoltage motorAppliedVolts = Volts.mutable(0.0);
-    public MutCurrent motorCurrent = Amps.mutable(0.0);
+    public MutCurrent motorStatorCurrent = Amps.mutable(0.0);
+    public MutCurrent motorSupplyCurrent = Amps.mutable(0.0);
   }
 
   /**

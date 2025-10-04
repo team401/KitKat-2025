@@ -30,7 +30,7 @@ import frc.robot.subsystems.drive.DriveIOSim;
 import frc.robot.subsystems.drive.DriveIOSpark;
 import frc.robot.subsystems.scoring.InitBindings;
 import frc.robot.subsystems.scoring.shooter.ScoringSubsystem;
-import frc.robot.subsystems.scoring.shooter.ShooterIOSparkMax;
+import frc.robot.subsystems.scoring.shooter.ShooterIOTalonFX;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -56,7 +56,7 @@ public class RobotContainer {
       case REAL:
         // Real robot, instantiate hardware IO implementations
         drive = new Drive(new DriveIOSpark());
-        scoring = new ScoringSubsystem(new ShooterIOSparkMax());
+        scoring = new ScoringSubsystem(new ShooterIOTalonFX());
         break;
 
       case SIM:
@@ -102,8 +102,8 @@ public class RobotContainer {
                     scoring))));
     autoChooser.addOption(
         "MOVE ONLY",
-            new ParallelRaceGroup(
-                new WaitCommand(2.0), DriveCommands.arcadeDrive(drive, () -> 0.5, () -> 0.0)));
+        new ParallelRaceGroup(
+            new WaitCommand(2.0), DriveCommands.arcadeDrive(drive, () -> 0.5, () -> 0.0)));
 
     // Configure the button bindings
     configureButtonBindings();

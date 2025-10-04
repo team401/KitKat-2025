@@ -1,6 +1,5 @@
 package frc.robot.subsystems.scoring.shooter;
 
-import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.RPM;
 import static edu.wpi.first.units.Units.Volts;
 import static frc.robot.subsystems.scoring.shooter.ShooterConstants.*;
@@ -50,7 +49,6 @@ public class ShooterIOSparkMax implements ShooterIO {
 
     // TODO: Use ifOk for the rest of these
     inputs.motorAppliedVolts.mut_replace(motor.getAppliedOutput(), Volts);
-    inputs.motorCurrent.mut_replace(motor.getOutputCurrent(), Amps);
   }
 
   public void runOpenLoop(Voltage voltage) {
