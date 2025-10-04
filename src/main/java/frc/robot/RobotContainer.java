@@ -17,6 +17,10 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.commands.DriveCommands;
@@ -84,6 +88,22 @@ public class RobotContainer {
         "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+    autoChooser.addOption(
+        "Move and score auto",
+        new SequentialCommandGroup(
+            new ParallelRaceGroup(
+                new WaitCommand(2.0), DriveCommands.arcadeDrive(drive, () -> 0.5, () -> 0.0)),
+            new ParallelRaceGroup(
+                new WaitCommand(8.0),
+                Commands.run(
+                    () -> {
+                      scoring.spin();
+                    },
+                    scoring))));
+    autoChooser.addOption(
+        "MOVE ONLY",
+            new ParallelRaceGroup(
+                new WaitCommand(2.0), DriveCommands.arcadeDrive(drive, () -> 0.5, () -> 0.0)));
 
     // Configure the button bindings
     configureButtonBindings();
