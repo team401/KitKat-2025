@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -91,9 +92,9 @@ public class RobotContainer {
     autoChooser.addOption(
         "Move and score auto",
         new SequentialCommandGroup(
-            new ParallelRaceGroup(
-                new WaitCommand(2.0), DriveCommands.arcadeDrive(drive, () -> 0.5, () -> 0.0)),
-            new ParallelRaceGroup(
+            new ParallelCommandGroup(
+                new WaitCommand(5.0), DriveCommands.arcadeDrive(drive, () -> 0.7, () -> 0.0)),
+            new ParallelCommandGroup(
                 new WaitCommand(8.0),
                 Commands.run(
                     () -> {
