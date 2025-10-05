@@ -92,15 +92,27 @@ public class RobotContainer {
     autoChooser.addOption(
         "Move and score auto",
         new SequentialCommandGroup(
+            // Drive forward for 5 seconds (this might be too long)
             new ParallelCommandGroup(
                 new WaitCommand(5.0), DriveCommands.arcadeDrive(drive, () -> 0.7, () -> 0.0)),
+            // Stop driving
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0),
+            // Spin the shooter for 8 seconds (hopefully this takes considerably less than 8
+            // seconds)
             new ParallelCommandGroup(
                 new WaitCommand(8.0),
                 Commands.run(
                     () -> {
                       scoring.spin();
                     },
-                    scoring))));
+                    scoring)),
+            // Stop the shooter for marginal battery savings and to prevent them from remaining
+            // spinning at start of teleop
+            Commands.run(
+                () -> {
+                  scoring.spin();
+                },
+                scoring)));
     autoChooser.addOption(
         "MOVE ONLY",
         new ParallelRaceGroup(
