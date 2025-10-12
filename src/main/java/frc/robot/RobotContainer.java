@@ -18,7 +18,6 @@ import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
@@ -31,6 +30,7 @@ import frc.robot.subsystems.drive.DriveIOSim;
 import frc.robot.subsystems.drive.DriveIOSpark;
 import frc.robot.subsystems.scoring.InitBindings;
 import frc.robot.subsystems.scoring.shooter.ScoringSubsystem;
+import frc.robot.subsystems.scoring.shooter.ShooterIOSim;
 import frc.robot.subsystems.scoring.shooter.ShooterIOTalonFX;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
@@ -63,7 +63,7 @@ public class RobotContainer {
       case SIM:
         // Sim robot, instantiate physics sim IO implementations
         drive = new Drive(new DriveIOSim());
-        scoring = null;
+        scoring = new ScoringSubsystem(new ShooterIOSim());
         break;
 
       default:
@@ -93,26 +93,24 @@ public class RobotContainer {
         "Move and score auto",
         new SequentialCommandGroup(
             // Drive forward for 5 seconds (this might be too long)
-            new ParallelCommandGroup(
-                new WaitCommand(5.0), DriveCommands.arcadeDrive(drive, () -> 0.7, () -> 0.0)),
+            DriveCommands.arcadeDrive(drive, () -> 0.7, () -> 0.0).withTimeout(5),
             // Stop driving
-            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0),
-            // Spin the shooter for 8 seconds (hopefully this takes considerably less than 8
-            // seconds)
-            new ParallelCommandGroup(
-                new WaitCommand(8.0),
-                Commands.run(
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0.2),
+            // Spin the shooter for 2.5 seconds
+            Commands.run(
                     () -> {
                       scoring.spin();
                     },
-                    scoring)),
+                    scoring)
+                .withTimeout(2.5),
             // Stop the shooter for marginal battery savings and to prevent them from remaining
             // spinning at start of teleop
             Commands.run(
-                () -> {
-                  scoring.spin();
-                },
-                scoring)));
+                    () -> {
+                      scoring.stop();
+                    },
+                    scoring)
+                .withTimeout(0)));
     autoChooser.addOption(
         "MOVE ONLY",
         new ParallelRaceGroup(
