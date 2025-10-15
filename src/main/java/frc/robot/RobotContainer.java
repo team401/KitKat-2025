@@ -92,23 +92,53 @@ public class RobotContainer {
     autoChooser.addOption(
         "Move and score auto (left from robot's perspective)",
         new SequentialCommandGroup(
-            // Drive forward for 1 second
-            DriveCommands.arcadeDrive(drive, () -> 0.7, () -> 0.0).withTimeout(1),
-            // Stop driving
-            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0.2),
             // Turn clockwise and move forward for 3 seconds
             DriveCommands.arcadeDrive(drive, () -> 0.85, () -> -0.5).withTimeout(2),
             // Stop driving again
-            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0.2),
-            // Spin the shooter for 2.5 seconds
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0.0),
+            // Spin the shooter for 0.75 seconds
             Commands.run(
                     () -> {
                       scoring.spin();
                     },
                     scoring)
-                .withTimeout(0.5),
-            // Stop the shooter for marginal battery savings and to prevent them from remaining
-            // spinning at start of teleop
+                .withTimeout(0.65),
+            // Stop the shooter for marginal battery savings
+            Commands.run(
+                    () -> {
+                      scoring.stop();
+                    },
+                    scoring)
+                .withTimeout(1),
+            // Turn the robot counterclockwise and move it backwards (go back to starting position)
+            DriveCommands.arcadeDrive(drive, () -> -0.85, () -> 0.5).withTimeout(1.8),
+            // Stop the robot
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0),
+
+            // Moves the robot forward for 5 seconds
+            DriveCommands.arcadeDrive(drive, () -> 0.7, () -> 0.0).withTimeout(5.8),
+            // Stop the robot
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0),
+            // Turn robot clockwise
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> -0.8).withTimeout(2),
+            // Stop the robot
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0),
+            // Move the robot backward for 3 seconds
+            DriveCommands.arcadeDrive(drive, () -> -0.7, () -> 0.0).withTimeout(3.0),
+            // Stop the robot (to pause for coral)
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(2),
+            // Move the robot forward for 2 seconds
+            DriveCommands.arcadeDrive(drive, () -> 0.7, () -> -0.1).withTimeout(5),
+            // Stop the robot
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0),
+            // Spin the shooter for 0.75 seconds
+            Commands.run(
+                    () -> {
+                      scoring.spin();
+                    },
+                    scoring)
+                .withTimeout(0.65),
+            // Stop the shooter for marginal battery savings
             Commands.runOnce(
                 () -> {
                   scoring.stop();
@@ -121,7 +151,7 @@ public class RobotContainer {
             // Drive forward for 2.5 seconds
             DriveCommands.arcadeDrive(drive, () -> 0.7, () -> 0.0).withTimeout(2.5),
             // Stop driving
-            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0.2),
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0),
             // Spin the shooter for 2.5 seconds
             Commands.run(
                     () -> {
