@@ -90,10 +90,36 @@ public class RobotContainer {
     autoChooser.addOption(
         "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
     autoChooser.addOption(
-        "Move and score auto",
+        "Move and score auto (left from robot's perspective)",
         new SequentialCommandGroup(
-            // Drive forward for 5 seconds (this might be too long)
-            DriveCommands.arcadeDrive(drive, () -> 0.7, () -> 0.0).withTimeout(5),
+            // Drive forward for 1 second
+            DriveCommands.arcadeDrive(drive, () -> 0.7, () -> 0.0).withTimeout(1),
+            // Stop driving
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0.2),
+            // Turn clockwise and move forward for 3 seconds
+            DriveCommands.arcadeDrive(drive, () -> 0.85, () -> -0.5).withTimeout(2),
+            // Stop driving again
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0.2),
+            // Spin the shooter for 2.5 seconds
+            Commands.run(
+                    () -> {
+                      scoring.spin();
+                    },
+                    scoring)
+                .withTimeout(0.5),
+            // Stop the shooter for marginal battery savings and to prevent them from remaining
+            // spinning at start of teleop
+            Commands.runOnce(
+                () -> {
+                  scoring.stop();
+                },
+                scoring)));
+
+    autoChooser.addOption(
+        "Move and score auto (middle)",
+        new SequentialCommandGroup(
+            // Drive forward for 2.5 seconds
+            DriveCommands.arcadeDrive(drive, () -> 0.7, () -> 0.0).withTimeout(2.5),
             // Stop driving
             DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0.2),
             // Spin the shooter for 2.5 seconds
@@ -102,15 +128,39 @@ public class RobotContainer {
                       scoring.spin();
                     },
                     scoring)
-                .withTimeout(2.5),
+                .withTimeout(0.5),
             // Stop the shooter for marginal battery savings and to prevent them from remaining
             // spinning at start of teleop
+            Commands.runOnce(
+                () -> {
+                  scoring.stop();
+                },
+                scoring)));
+    autoChooser.addOption(
+        "Move and score auto (right from robot's perspective)",
+        new SequentialCommandGroup(
+            // Drive forward for 1 second
+            DriveCommands.arcadeDrive(drive, () -> 0.7, () -> 0.0).withTimeout(1),
+            // Stop driving
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0.2),
+            // Turn counterclockwise and move forward for 2 seconds
+            DriveCommands.arcadeDrive(drive, () -> 0.85, () -> 0.5).withTimeout(2),
+            // Stop driving again
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0).withTimeout(0.2),
+            // Spin the shooter for 2.5 seconds
             Commands.run(
                     () -> {
-                      scoring.stop();
+                      scoring.spin();
                     },
                     scoring)
-                .withTimeout(0)));
+                .withTimeout(0.5),
+            // Stop the shooter for marginal battery savings and to prevent them from remaining
+            // spinning at start of teleop
+            Commands.runOnce(
+                () -> {
+                  scoring.stop();
+                },
+                scoring)));
     autoChooser.addOption(
         "MOVE ONLY",
         new ParallelRaceGroup(
