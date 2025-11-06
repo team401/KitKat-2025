@@ -146,6 +146,31 @@ public class RobotContainer {
                 scoring)));
 
     autoChooser.addOption(
+        "encoder left score",
+        new SequentialCommandGroup(
+            // Turn clockwise and drive 1.5 meters forward
+            DriveCommands.arcadeDrive(drive, () -> 0.5, () -> -0.5)
+                .until(
+                    () ->
+                        drive.getLeftPositionMeters() >= 3.02
+                            && drive.getRightPositionMeters() >= 2.46),
+            // Stop driving
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0),
+            // Spin the shooter for 0.75 seconds
+            Commands.run(
+                    () -> {
+                      scoring.spin(0.75);
+                    },
+                    scoring)
+                .withTimeout(0.75),
+            // Stop the shooter for marginal battery savings
+            Commands.run(
+                () -> {
+                  scoring.stop();
+                },
+                scoring)));
+
+    autoChooser.addOption(
         "Move and score auto (middle)",
         new SequentialCommandGroup(
             // Drive forward for 2.5 seconds
@@ -159,8 +184,7 @@ public class RobotContainer {
                     },
                     scoring)
                 .withTimeout(0.5),
-            // Stop the shooter for marginal battery savings and to prevent them from remaining
-            // spinning at start of teleop
+            // Stop the shooter
             Commands.runOnce(
                 () -> {
                   scoring.stop();
@@ -195,6 +219,34 @@ public class RobotContainer {
         "MOVE ONLY",
         new ParallelRaceGroup(
             new WaitCommand(2.0), DriveCommands.arcadeDrive(drive, () -> 0.5, () -> 0.0)));
+    autoChooser.addOption(
+        "middle score encoder",
+        new SequentialCommandGroup(
+            // Drive 2.23 meters forward
+            DriveCommands.arcadeDrive(drive, () -> 0.5, () -> 0.0)
+                .until(() -> drive.getLeftPositionMeters() >= 2.23),
+            // Stop driving
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0),
+            // Spin the shooter for 0.75 seconds
+            Commands.run(
+                    () -> {
+                      scoring.spin(0.75);
+                    },
+                    scoring)
+                .withTimeout(0.75),
+            // Stop the shooter for marginal battery savings
+            Commands.run(
+                () -> {
+                  scoring.stop();
+                },
+                scoring)));
+    autoChooser.addOption(
+        "encoder test",
+        new SequentialCommandGroup(
+            // Drive forward 1 meter
+            DriveCommands.arcadeDrive(drive, () -> 0.5, () -> 0.0)
+                .until(() -> drive.getLeftPositionMeters() > 1),
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0)));
 
     // Configure the button bindings
     configureButtonBindings();

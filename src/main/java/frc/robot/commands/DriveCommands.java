@@ -43,8 +43,7 @@ public class DriveCommands {
         () -> {
           // Apply deadband
           double x = MathUtil.applyDeadband(xSupplier.getAsDouble(), DEADBAND);
-          double z =
-              MathUtil.applyDeadband(zSupplier.getAsDouble() / 1.41, DEADBAND); // six seveenn
+          double z = MathUtil.applyDeadband(zSupplier.getAsDouble() / 1.41, DEADBAND);
 
           // Calculate speeds
           var speeds = DifferentialDrive.arcadeDriveIK(x, z, true);
