@@ -23,12 +23,14 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
@@ -98,6 +100,14 @@ public class Drive extends SubsystemBase {
     Logger.processInputs("Drive", inputs);
 
     // Update gyro angle
+    // Use the angle delta from the kinematics and module deltas
+    Twist2d twist =
+        kinematics.toTwist2d(
+            getLeftPositionMeters() - lastLeftPositionMeters,
+            getRightPositionMeters() - lastRightPositionMeters);
+    rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+    lastLeftPositionMeters = getLeftPositionMeters();
+    lastRightPositionMeters = getRightPositionMeters();
 
     // Update odometry
     poseEstimator.update(rawGyroRotation, getLeftPositionMeters(), getRightPositionMeters());
@@ -171,13 +181,13 @@ public class Drive extends SubsystemBase {
   /** Returns the position of the left wheels in meters. */
   @AutoLogOutput
   public double getLeftPositionMeters() {
-    return inputs.leftPositionRad * wheelRadiusMeters;
+    return inputs.leftPositionRad * wheelRadiusMeters - this.offsetLeft;
   }
 
   /** Returns the position of the right wheels in meters. */
   @AutoLogOutput
   public double getRightPositionMeters() {
-    return inputs.rightPositionRad * wheelRadiusMeters;
+    return inputs.rightPositionRad * wheelRadiusMeters - this.offsetRight;
   }
 
   /** Returns the velocity of the left wheels in meters/second. */
@@ -195,5 +205,18 @@ public class Drive extends SubsystemBase {
   /** Returns the average velocity in radians/second. */
   public double getCharacterizationVelocity() {
     return (inputs.leftVelocityRadPerSec + inputs.rightVelocityRadPerSec) / 2.0;
+  }
+
+  private double offsetLeft = 0.0;
+  private double offsetRight = 0.0;
+
+  public Command resetEncoders() {
+    return Commands.runOnce(
+        () -> {
+          io.resetEncoders();
+          this.offsetLeft += this.getLeftPositionMeters();
+          this.offsetRight += this.getRightPositionMeters();
+        },
+        this);
   }
 }
