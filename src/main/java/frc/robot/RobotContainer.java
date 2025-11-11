@@ -222,6 +222,8 @@ public class RobotContainer {
     autoChooser.addOption(
         "middle score encoder",
         new SequentialCommandGroup(
+            // Resets drive encoders
+            drive.resetEncoders(),
             // Drive 2.23 meters forward
             DriveCommands.arcadeDrive(drive, () -> 0.5, () -> 0.0)
                 .until(() -> drive.getLeftPositionMeters() >= 2.23),
