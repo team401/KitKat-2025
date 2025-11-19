@@ -213,9 +213,11 @@ public class Drive extends SubsystemBase {
   public Command resetEncoders() {
     return Commands.runOnce(
         () -> {
+          Pose2d robotPose = poseEstimator.getEstimatedPosition();
           io.resetEncoders();
           this.offsetLeft += this.getLeftPositionMeters();
           this.offsetRight += this.getRightPositionMeters();
+          poseEstimator.resetPosition(new Rotation2d(), 0.0, 0.0, robotPose);
         },
         this);
   }
