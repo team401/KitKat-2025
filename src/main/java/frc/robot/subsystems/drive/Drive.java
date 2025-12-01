@@ -21,6 +21,7 @@ import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.controllers.PPLTVController;
 import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
+import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -231,8 +232,13 @@ public class Drive extends SubsystemBase {
       return new FollowPathCommand(
           path,
           this::getPose, // Robot pose supplier
-          this::getRobotRelativeSpeeds, // ChassisSpeeds supplier. MUST BE ROBOT RELATIVE
-          this::arcadeDrive, // Method that will drive the robot given ROBOT RELATIVE ChassisSpeeds, AND
+          () ->
+              kinematics.toChassisSpeeds(
+                  new DifferentialDriveWheelSpeeds(
+                      getLeftVelocityMetersPerSec(),
+                      getRightVelocityMetersPerSec())), // ChassisSpeeds supplier. MUST BE ROBOT
+          // RELATIVE
+          (ChassisSpeeds speeds, DriveFeedforwards ff) -> runClosedLoop(speeds),
           // feedforwards
           new PPLTVController(
               0.02), // PPLTVController is the built in path following controller for differential

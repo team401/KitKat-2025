@@ -14,6 +14,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,6 +33,8 @@ import frc.robot.subsystems.scoring.InitBindings;
 import frc.robot.subsystems.scoring.shooter.ScoringSubsystem;
 import frc.robot.subsystems.scoring.shooter.ShooterIOSim;
 import frc.robot.subsystems.scoring.shooter.ShooterIOTalonFX;
+import java.io.IOException;
+import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -259,7 +262,23 @@ public class RobotContainer {
             DriveCommands.arcadeDrive(drive, () -> 0.5, () -> 0.0)
                 .until(() -> drive.getLeftPositionMeters() > 1),
             DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0)));
+    autoChooser.addOption(
+        "pathplanner test",
+        new SequentialCommandGroup(
+            // set robot pose for sim
+            Commands.runOnce(
+                () -> {
+                  try {
+                    var path = PathPlannerPath.fromPathFile("LeftAutoPath");
+                    var startingPose = path.getStartingDifferentialPose();
+                    drive.setPose(startingPose);
+                  } catch (IOException | ParseException exc) {
+                    System.err.println(exc);
+                  }
+                }),
 
+            // follow the left auto path
+            drive.followPathCommand("LeftAutoPath")));
     // Configure the button bindings
     configureButtonBindings();
   }
