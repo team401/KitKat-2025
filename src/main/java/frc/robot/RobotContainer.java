@@ -277,8 +277,11 @@ public class RobotContainer {
                   }
                 }),
 
-            // follow the left auto path
-            drive.followPathCommand("LeftAutoPath")));
+            // follow the left auto paths
+            drive.followPathCommand("LeftAutoPath"),
+            drive.followPathCommand("LeftAutoPath2"),
+            drive.followPathCommand("LeftAutoPath3"),
+            drive.followPathCommand("LeftAutoPath4")));
     // Configure the button bindings
     configureButtonBindings();
   }

@@ -9,6 +9,12 @@
           "data": {
             "pathName": "LeftAutoPath"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LeftAutoPath2"
+          }
         }
       ]
     }
