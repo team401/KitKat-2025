@@ -64,6 +64,7 @@ public class DriveIOSpark implements DriveIO {
         () ->
             leftLeader.configure(
                 config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters));
+    config.encoder.inverted(rightInverted);
     config.inverted(rightInverted);
     tryUntilOk(
         rightLeader,
