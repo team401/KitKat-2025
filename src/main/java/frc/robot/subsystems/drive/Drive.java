@@ -17,18 +17,23 @@ import static edu.wpi.first.units.Units.*;
 import static frc.robot.subsystems.drive.DriveConstants.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.commands.FollowPathCommand;
 import com.pathplanner.lib.controllers.PPLTVController;
+import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.pathfinding.Pathfinding;
+import com.pathplanner.lib.util.DriveFeedforwards;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Twist2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants;
@@ -98,6 +103,14 @@ public class Drive extends SubsystemBase {
     Logger.processInputs("Drive", inputs);
 
     // Update gyro angle
+    // Use the angle delta from the kinematics and module deltas
+    Twist2d twist =
+        kinematics.toTwist2d(
+            getLeftPositionMeters() - lastLeftPositionMeters,
+            getRightPositionMeters() - lastRightPositionMeters);
+    rawGyroRotation = rawGyroRotation.plus(new Rotation2d(twist.dtheta));
+    lastLeftPositionMeters = getLeftPositionMeters();
+    lastRightPositionMeters = getRightPositionMeters();
 
     // Update odometry
     poseEstimator.update(rawGyroRotation, getLeftPositionMeters(), getRightPositionMeters());
@@ -171,13 +184,13 @@ public class Drive extends SubsystemBase {
   /** Returns the position of the left wheels in meters. */
   @AutoLogOutput
   public double getLeftPositionMeters() {
-    return inputs.leftPositionRad * wheelRadiusMeters;
+    return inputs.leftPositionRad * wheelRadiusMeters - this.offsetLeft;
   }
 
   /** Returns the position of the right wheels in meters. */
   @AutoLogOutput
   public double getRightPositionMeters() {
-    return inputs.rightPositionRad * wheelRadiusMeters;
+    return inputs.rightPositionRad * wheelRadiusMeters - this.offsetRight;
   }
 
   /** Returns the velocity of the left wheels in meters/second. */
@@ -195,5 +208,58 @@ public class Drive extends SubsystemBase {
   /** Returns the average velocity in radians/second. */
   public double getCharacterizationVelocity() {
     return (inputs.leftVelocityRadPerSec + inputs.rightVelocityRadPerSec) / 2.0;
+  }
+
+  private double offsetLeft = 0.0;
+  private double offsetRight = 0.0;
+
+  public Command resetEncoders() {
+    return Commands.runOnce(
+        () -> {
+          Pose2d robotPose = poseEstimator.getEstimatedPosition();
+          io.resetEncoders();
+          this.offsetLeft += this.getLeftPositionMeters();
+          this.offsetRight += this.getRightPositionMeters();
+          poseEstimator.resetPosition(new Rotation2d(), 0.0, 0.0, robotPose);
+        },
+        this);
+  }
+
+  public Command followPathCommand(String pathName) {
+    try {
+      PathPlannerPath path = PathPlannerPath.fromPathFile(pathName);
+
+      return new FollowPathCommand(
+          path,
+          this::getPose, // Robot pose supplier
+          () ->
+              kinematics.toChassisSpeeds(
+                  new DifferentialDriveWheelSpeeds(
+                      getLeftVelocityMetersPerSec(),
+                      getRightVelocityMetersPerSec())), // ChassisSpeeds supplier. MUST BE ROBOT
+          // RELATIVE
+          (ChassisSpeeds speeds, DriveFeedforwards ff) -> runClosedLoop(speeds),
+          // feedforwards
+          new PPLTVController(
+              0.02), // PPLTVController is the built in path following controller for differential
+          // drive trains
+          DriveConstants.ppConfig, // The robot configuration
+          () -> {
+            // Boolean supplier that controls when the path will be mirrored for the red alliance
+            // This will flip the path being followed to the red side of the field.
+            // THE ORIGIN WILL REMAIN ON THE BLUE SIDE
+
+            var alliance = DriverStation.getAlliance();
+            if (alliance.isPresent()) {
+              return alliance.get() == DriverStation.Alliance.Red;
+            }
+            return false;
+          },
+          this // Reference to this subsystem to set requirements
+          );
+    } catch (Exception e) {
+      DriverStation.reportError("Big oops: " + e.getMessage(), e.getStackTrace());
+      return Commands.none();
+    }
   }
 }

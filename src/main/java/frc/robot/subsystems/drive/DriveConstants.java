@@ -32,7 +32,7 @@ public class DriveConstants {
   // Motor configuration
   public static final int currentLimit = 60;
   public static final double wheelRadiusMeters = Units.inchesToMeters(3.0);
-  public static final double motorReduction = 8.451;
+  public static final double motorReduction = 1.0; // tentative number
   public static final boolean leftInverted = true;
   public static final boolean rightInverted = false;
   public static final DCMotor gearbox = DCMotor.getCIM(2);

@@ -14,6 +14,7 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -32,6 +33,8 @@ import frc.robot.subsystems.scoring.InitBindings;
 import frc.robot.subsystems.scoring.shooter.ScoringSubsystem;
 import frc.robot.subsystems.scoring.shooter.ShooterIOSim;
 import frc.robot.subsystems.scoring.shooter.ShooterIOTalonFX;
+import java.io.IOException;
+import org.json.simple.parser.ParseException;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 /**
@@ -146,31 +149,6 @@ public class RobotContainer {
                 scoring)));
 
     autoChooser.addOption(
-        "encoder left score",
-        new SequentialCommandGroup(
-            // Turn clockwise and drive 1.5 meters forward
-            DriveCommands.arcadeDrive(drive, () -> 0.5, () -> -0.5)
-                .until(
-                    () ->
-                        drive.getLeftPositionMeters() >= 3.02
-                            && drive.getRightPositionMeters() >= 2.46),
-            // Stop driving
-            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0),
-            // Spin the shooter for 0.75 seconds
-            Commands.run(
-                    () -> {
-                      scoring.spin(0.75);
-                    },
-                    scoring)
-                .withTimeout(0.75),
-            // Stop the shooter for marginal battery savings
-            Commands.run(
-                () -> {
-                  scoring.stop();
-                },
-                scoring)));
-
-    autoChooser.addOption(
         "Move and score auto (middle)",
         new SequentialCommandGroup(
             // Drive forward for 2.5 seconds
@@ -220,11 +198,48 @@ public class RobotContainer {
         new ParallelRaceGroup(
             new WaitCommand(2.0), DriveCommands.arcadeDrive(drive, () -> 0.5, () -> 0.0)));
     autoChooser.addOption(
-        "middle score encoder",
+        "Move and score auto with encoder (left from robot's perspective)",
         new SequentialCommandGroup(
-            // Drive 2.23 meters forward
+            // Resets drive encoders
+            drive.resetEncoders(),
+            // Drive 0.5 meters forward
+            DriveCommands.arcadeDrive(drive, () -> 1, () -> 0.0)
+                .until(() -> drive.getLeftPositionMeters() >= 0.5),
+            // Turn clockwise and drive 1.5 meters forward
+            DriveCommands.arcadeDrive(drive, () -> 1, () -> -1)
+                .until(
+                    () ->
+                        drive.getLeftPositionMeters() >= 2.11
+                            && drive.getRightPositionMeters() >= 1.55),
+            // Stop driving
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0),
+            // Drive 0.5 meters forward
+            DriveCommands.arcadeDrive(drive, () -> 1, () -> 0.0)
+                .until(() -> drive.getLeftPositionMeters() >= 0.5),
+            // Stop driving
+            DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0),
+            // Spin the shooter for 0.75 seconds
+            Commands.run(
+                    () -> {
+                      scoring.spin(0.75);
+                    },
+                    scoring)
+                .withTimeout(0.75),
+            // Stop the shooter for marginal battery savings
+            Commands.run(
+                () -> {
+                  scoring.stop();
+                },
+                scoring)));
+
+    autoChooser.addOption(
+        "Move and score auto with encoder (middle)",
+        new SequentialCommandGroup(
+            // Resets drive encoders
+            drive.resetEncoders(),
+            // Drive 1.5 meters forward
             DriveCommands.arcadeDrive(drive, () -> 0.5, () -> 0.0)
-                .until(() -> drive.getLeftPositionMeters() >= 2.23),
+                .until(() -> drive.getLeftPositionMeters() >= 1.5),
             // Stop driving
             DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0),
             // Spin the shooter for 0.75 seconds
@@ -247,7 +262,26 @@ public class RobotContainer {
             DriveCommands.arcadeDrive(drive, () -> 0.5, () -> 0.0)
                 .until(() -> drive.getLeftPositionMeters() > 1),
             DriveCommands.arcadeDrive(drive, () -> 0.0, () -> 0.0)));
+    autoChooser.addOption(
+        "pathplanner test",
+        new SequentialCommandGroup(
+            // set robot pose for sim
+            Commands.runOnce(
+                () -> {
+                  try {
+                    var path = PathPlannerPath.fromPathFile("LeftAutoPath");
+                    var startingPose = path.getStartingDifferentialPose();
+                    drive.setPose(startingPose);
+                  } catch (IOException | ParseException exc) {
+                    System.err.println(exc);
+                  }
+                }),
 
+            // follow the left auto paths
+            drive.followPathCommand("LeftAutoPath"),
+            drive.followPathCommand("LeftAutoPath2"),
+            drive.followPathCommand("LeftAutoPath3"),
+            drive.followPathCommand("LeftAutoPath4")));
     // Configure the button bindings
     configureButtonBindings();
   }
