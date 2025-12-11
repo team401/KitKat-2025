@@ -15,11 +15,23 @@
           "data": {
             "pathName": "LeftAutoPath2"
           }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LeftAutoPath3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "LeftAutoPath4"
+          }
         }
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": null,
   "choreoAuto": false
 }
